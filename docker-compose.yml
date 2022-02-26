@@ -1,0 +1,38 @@
+version: '3.5'
+services:
+  traefik:
+    image: traefik:latest
+    command:
+      - --providers.docker=true
+      - --api
+      - --log.level=DEBUG
+      - --accesslog=true
+      - --accesslog.filepath=access.log
+      - --accesslog.bufferingsize=100
+    ports:
+      - 2350:2350
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+  tmserver:
+    container_name: tmserver
+    build: ./docker-tm
+    ports:
+      - 3450:3450
+      - 2351:2350
+      - 5000:5000
+    environment:
+      - SERVER_LOGIN=
+      - SERVER_PASSWORD=
+      - SERVER_VALIDATIONKEY=
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.tmserver.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.tmserver.entrypoints=tmserver"
+      - "traefik.tcp.routers.tmserver.service=tmserver-svc"
+      - "traefik.tcp.services.tmserver-svc.loadbalancer.server.port=2350"
+
+networks:
+  default:
+    name: tm

@@ -1,0 +1,16 @@
+---
+api:
+  dashboard: true
+providers:
+  docker:
+    network: tm
+entryPoints:
+  http:
+    address: ":80"
+  tmserver:
+    address: ":2340"
+log:
+  level: info
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
